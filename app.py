@@ -158,20 +158,31 @@ with tabs[0]:
             # Feedback icons with tooltips
             fb_col1, fb_col2 = st.columns([1, 1])
             with fb_col1:
-                if st.button("👍", key=f"up_{rec['Title']}"):
-                    save_feedback(
-                        query_title=st.session_state.detail_for,
-                        rec_title=rec["Title"],
-                        feedback="upvote",
-                        similarity=rec.get("similarity_score")
-                    )
-                    st.toast("Good recommendation recorded!", icon="✅")
-                st.caption("Good recommendation")
+                with fb_col1:
+                    if st.button("👍", key=f"up_{rec['Title']}"):
+                        entry = {
+                            "timestamp": datetime.utcnow().isoformat(),
+                            "query_title": st.session_state.detail_for,
+                            "recommended_title": rec["Title"],
+                            "feedback": "upvote",
+                            "similarity_score": rec.get("similarity_score"),
+                        }
+                        save_feedback_to_gsheet(entry)
+                        st.toast("Good recommendation recorded!", icon="✅")
+                    st.caption("Good recommendation")
             with fb_col2:
                 if st.button("👎", key=f"down_{rec['Title']}"):
+                    entry = {
+                        "timestamp": datetime.utcnow().isoformat(),
+                        "query_title": st.session_state.detail_for,
+                        "recommended_title": rec["Title"],
+                        "feedback": "downvote",
+                        "similarity_score": rec.get("similarity_score"),
+                    }
                     save_feedback_to_gsheet(entry)
                     st.toast("Bad recommendation recorded!", icon="⚠️")
                 st.caption("Bad recommendation")
+
 
 # --- Tab 2: Genre Suggestions ---
 with tabs[1]:
@@ -275,5 +286,4 @@ with tabs[2]:
                 st.markdown(f"**Synopsis:** {manga.get('Synopsis', '')[:200]}...")
 
         st.write(f"Page {page} of {total_pages}")
-
 
