@@ -169,12 +169,7 @@ with tabs[0]:
                 st.caption("Good recommendation")
             with fb_col2:
                 if st.button("👎", key=f"down_{rec['Title']}"):
-                    save_feedback(
-                        query_title=st.session_state.detail_for,
-                        rec_title=rec["Title"],
-                        feedback="downvote",
-                        similarity=rec.get("similarity_score")
-                    )
+                    save_feedback_to_gsheet(entry)
                     st.toast("Bad recommendation recorded!", icon="⚠️")
                 st.caption("Bad recommendation")
 
