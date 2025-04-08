@@ -4,6 +4,8 @@ import math
 import random
 import json
 from datetime import datetime
+import gspread
+from oauth2client.service_account import ServiceAccountCredentials
 
 # --- Load and cache the recommender ---
 @st.cache_resource(show_spinner=False)
@@ -115,19 +117,19 @@ def show_manga_details(title):
 show_manga_details(st.session_state.detail_for)
 
 # --- Save feedback function ---
-def save_feedback(query_title, rec_title, feedback, similarity):
-    entry = {
-        "timestamp": datetime.utcnow().isoformat(),
-        "query_title": query_title,
-        "recommended_title": rec_title,
-        "feedback": feedback,
-        "similarity_score": similarity,
-    }
-    try:
-        with open("feedback_log.jsonl", "a", encoding="utf-8") as f:
-            f.write(json.dumps(entry) + "\n")
-    except Exception as e:
-        st.error(f"Failed to save feedback: {e}")
+def save_feedback_to_gsheet(entry):
+    scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
+    creds = ServiceAccountCredentials.from_json_keyfile_dict(st.secrets["gcp_service_account"], scope)
+    client = gspread.authorize(creds)
+
+    sheet = client.open("Manga_Feedback").worksheet("Feedback")
+    sheet.append_row([
+        entry["timestamp"],
+        entry["query_title"],
+        entry["recommended_title"],
+        entry["feedback"],
+        entry["similarity_score"],
+    ])
 
 # --- Tabs Layout ---
 tabs = st.tabs(["Similar Recommendations", "Genre Suggestions", "Browse Manga"])
